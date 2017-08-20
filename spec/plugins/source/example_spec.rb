@@ -36,6 +36,10 @@ RSpec.describe "real source plugins" do
                 mkdir_p(install_path.parent)
                 FileUtils.cp_r(path, install_path)
 
+                spec_path = install_path.join("\#{spec.full_name}.gemspec")
+                spec_path.open("wb") {|f| f.write spec.to_ruby }
+                spec.loaded_from = spec_path.to_s
+
                 post_install(spec)
 
                 nil
@@ -140,8 +144,8 @@ RSpec.describe "real source plugins" do
     describe "bundle cache/package" do
       let(:uri_hash) { Digest::SHA1.hexdigest(lib_path("a-path-gem-1.0").to_s) }
       it "copies repository to vendor cache and uses it" do
-        bundle "install"
-        bundle "cache --all"
+        bundle! "install"
+        bundle! "cache --all"
 
         expect(bundled_app("vendor/cache/a-path-gem-1.0-#{uri_hash}")).to exist
         expect(bundled_app("vendor/cache/a-path-gem-1.0-#{uri_hash}/.git")).not_to exist
@@ -251,6 +255,10 @@ RSpec.describe "real source plugins" do
                 Dir.chdir install_path do
                   `git reset --hard \#{revision}`
                 end
+
+                spec_path = install_path.join("\#{spec.full_name}.gemspec")
+                spec_path.open("wb") {|f| f.write spec.to_ruby }
+                spec.loaded_from = spec_path.to_s
 
                 post_install(spec)
 
